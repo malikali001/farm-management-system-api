@@ -1,7 +1,7 @@
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.utils.translation import gettext_lazy as _
+from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -9,11 +9,11 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     password = serializers.CharField(write_only=True)
 
     def validate(self, attrs):
+        attrs['username'] = attrs['email']
         credentials = {
             'email': attrs.get('email'),
             'password': attrs.get('password')
         }
-
         if all(credentials.values()):
             user = authenticate(request=self.context.get('request'), **credentials)
 
@@ -34,5 +34,5 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
-        token['name'] = user.get_full_name()
+        token['name'] = user.first_name
         return token
